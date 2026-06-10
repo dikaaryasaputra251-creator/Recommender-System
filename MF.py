@@ -12,8 +12,11 @@ import matplotlib.pyplot as plt
 
 def train_model(ratings, num_users, num_books):
     # Split the data into a training set and a validation set
+    # MATDIS: Himpunan - X adalah himpunan pasangan (user, book), y adalah himpunan rating
     X = ratings[['User-ID', 'ISBN']].values
     y = ratings['Book-Rating'].values
+    
+    # MATDIS: Partisi Himpunan - membagi data menjadi training (80%) dan validation (20%)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
     y_train = pd.to_numeric(y_train, errors='coerce')
     y_val = pd.to_numeric(y_val, errors='coerce')
@@ -24,20 +27,27 @@ def train_model(ratings, num_users, num_books):
     y_val = y_val[~np.isnan(y_val)]
 
     # Define the model
+    # MATDIS: Matriks - Embedding user (num_users × 10), setiap baris adalah vektor laten user
     user_input = Input(shape=(1,))
     user_embedding = Embedding(num_users, 10)(user_input)
+    # MATDIS: Vektor - Flatten() mengubah embedding (1×10) menjadi vektor 1D
     user_flatten = Flatten()(user_embedding)
 
+    # MATDIS: Matriks - Embedding book (num_books × 10), setiap baris adalah vektor laten book
     book_input = Input(shape=(1,))
     book_embedding = Embedding(num_books, 10)(book_input)
+    # MATDIS: Vektor - Flatten() mengubah embedding (1×10) menjadi vektor 1D
     book_flatten = Flatten()(book_embedding)
 
+    # MATDIS: Dot Product - perkalian dot product antara vektor user dan vektor book
     dot_product = Dot(axes=1)([user_flatten, book_flatten])
 
     model = Model(inputs=[user_input, book_input], outputs=dot_product)
 
     # Compile the model
     # model.compile(loss='mean_squared_error', optimizer=Adam())
+    # MATDIS: Fungsi Loss - MSE = (1/n)Σ(y_i - ŷ_i)²
+    # MATDIS: Optimasi - Adam optimizer melakukan gradient descent
     model.compile(optimizer=Adam(), loss='mean_squared_error', metrics=[tf.keras.metrics.MeanSquaredError()])
 
     # print(y_train)
